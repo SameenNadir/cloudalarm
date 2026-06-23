@@ -1,0 +1,17 @@
+# Dependencies
+node_modules/
+
+# Environment variables (NEVER commit these - they contain secrets!)
+.env
+.env.local
+
+# Next.js build output
+frontend/.next/
+frontend/out/
+
+# Terraform
+test-terraform/.terraform/
+test-terraform/terraform.tfstate
+test-terraform/terraform.tfstate.backup
+test-terraform/.terraform.lock.hcl
+test-terraform/output/
