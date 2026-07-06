@@ -1,11 +1,12 @@
 const express = require('express');
 const { runTerraformPlan } = require('../services/terraformEngine');
+const { sendDriftAlert } = require('../services/alertService');
 const supabase = require('../services/supabaseClient');
 
 const router = express.Router();
 
 router.post('/scan', async (req, res) => {
-  const { terraformDir, userId } = req.body;
+  const { terraformDir, userId, userEmail } = req.body;
 
   if (!terraformDir) {
     return res.status(400).json({
@@ -17,10 +18,10 @@ router.post('/scan', async (req, res) => {
   console.log(`🔍 Starting drift scan on: ${terraformDir}`);
 
   try {
-    // Step 1: Run terraform plan
     const result = await runTerraformPlan(terraformDir);
+    const scannedAt = new Date().toISOString();
 
-    // Step 2: Save the result to Supabase
+    // Save to database
     const { data, error } = await supabase
       .from('scans')
       .insert([{
@@ -30,24 +31,31 @@ router.post('/scan', async (req, res) => {
         exit_code: result.exitCode,
         message: result.message,
         output: result.output,
-        scanned_at: new Date().toISOString(),
+        scanned_at: scannedAt,
       }])
       .select();
 
     if (error) {
-      console.error('❌ Failed to save scan to database:', error.message);
+      console.error('❌ Failed to save scan:', error.message);
     } else {
-      console.log('💾 Scan saved to database:', data[0].id);
+      console.log('💾 Scan saved:', data[0].id);
     }
 
-    // Step 3: Return result to frontend
-    console.log(`✅ Scan complete — Status: ${result.status}`);
+    // Send email alert if drift detected
+    if (result.status === 'DRIFT_DETECTED' && userEmail) {
+      await sendDriftAlert({
+        toEmail: userEmail,
+        terraformDir,
+        scannedAt,
+      });
+    }
+
     return res.status(200).json({
       success: true,
       terraformDir,
       ...result,
       scanId: data ? data[0].id : null,
-      scannedAt: new Date().toISOString(),
+      scannedAt,
     });
 
   } catch (err) {
@@ -60,7 +68,6 @@ router.post('/scan', async (req, res) => {
   }
 });
 
-// GET /api/drift/scans — fetch all past scans
 router.get('/scans', async (req, res) => {
   const { data, error } = await supabase
     .from('scans')
