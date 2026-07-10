@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const driftRoutes = require('./routes/drift');
+const projectRoutes = require('./routes/projects');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -18,11 +19,12 @@ app.get('/health', (req, res) => {
   });
 });
 
-// All drift-related endpoints live under /api/drift
 app.use('/api/drift', driftRoutes);
+app.use('/api/projects', projectRoutes);
 
 app.listen(PORT, () => {
   console.log(`✅ CloudAlarm backend running on http://localhost:${PORT}`);
   console.log(`   Health check  → http://localhost:${PORT}/health`);
   console.log(`   Drift scan    → POST http://localhost:${PORT}/api/drift/scan`);
+  console.log(`   Projects      → GET/POST http://localhost:${PORT}/api/projects`);
 });
