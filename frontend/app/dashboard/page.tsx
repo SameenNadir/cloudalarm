@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { supabase } from '../../lib/supabase';
 
-const BACKEND_URL = 'http://localhost:4000';
+const BACKEND_URL = 'https://cloudalarm-production.up.railway.app';
 
 type Scan = {
   id: string;
