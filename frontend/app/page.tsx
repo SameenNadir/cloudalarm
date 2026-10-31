@@ -1,3 +1,5 @@
+import Link from 'next/link';
+
 export default function HomePage() {
   return (
     <main className="min-h-screen bg-gray-950 text-white flex flex-col items-center justify-center p-8">
@@ -23,14 +25,17 @@ export default function HomePage() {
         <p className="text-gray-500 text-sm">
           Backend:{" "}
           <code className="text-gray-300 bg-gray-800 px-1.5 py-0.5 rounded text-xs">
-            http://localhost:4000
+            https://cloudalarm-production.up.railway.app
           </code>
         </p>
       </div>
 
-      <p className="mt-10 text-gray-600 text-sm">
-        Phase 1 complete · Next: build the drift engine →
-      </p>
+      <Link
+        href="/dashboard"
+        className="mt-10 text-gray-300 hover:text-white text-sm underline"
+      >
+        Open the dashboard →
+      </Link>
     </main>
   );
 }
